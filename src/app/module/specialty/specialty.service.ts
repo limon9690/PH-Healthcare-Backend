@@ -35,7 +35,7 @@ const deleteSpecialty = async (id : string) => {
     return specialty;
 }
 
-export const specialtyService = {
+export const SpecialtyService = {
     createSpecialty,
     getAllSpecialties,
     updateSpecialty,
