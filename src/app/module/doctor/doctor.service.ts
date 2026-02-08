@@ -1,3 +1,5 @@
+import status from "http-status";
+import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma"
 import { IUpdateDoctorPayload } from "./doctor.interface";
 
@@ -41,7 +43,7 @@ const updateDoctor = async (updateDoctorPayload : IUpdateDoctorPayload, doctorId
     });
 
     if (!doctor) {
-        throw new Error('Doctor not found');
+        throw new AppError(status.NOT_FOUND,'Doctor not found');
     }
     
     const result = await prisma.doctor.update({

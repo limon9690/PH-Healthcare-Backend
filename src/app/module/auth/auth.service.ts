@@ -1,17 +1,9 @@
+import status from "http-status";
 import { UserStatus } from "../../../generated/prisma/enums";
+import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
-
-interface IRegisterPatientPayload {
-    name: string;
-    email: string;
-    password: string;
-}
-
-interface ILoginUserPayload {
-    email: string;
-    password: string;
-}
+import { ILoginUserPayload, IRegisterPatientPayload } from "./auth.interface";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
     const data = await auth.api.signUpEmail({
@@ -21,7 +13,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
     });
 
     if (!data.user) {
-        throw new Error('User registration failed');
+        throw new AppError(status.BAD_REQUEST,'User registration failed');
     }
 
     try {
@@ -58,15 +50,15 @@ const loginUser = async (payload: ILoginUserPayload) => {
     });
 
     if (!data.user) {
-        throw new Error('User login failed');
+        throw new AppError(status.BAD_REQUEST, 'User login failed');
     }
 
     if (data.user.status === UserStatus.BLOCKED) {
-        throw new Error('User is blocked');
+        throw new AppError(status.FORBIDDEN, 'User is blocked');
     }
 
     if (data.user.status === UserStatus.DELETED || data.user.isDeleted) {
-        throw new Error('User is deleted');
+        throw new AppError(status.GONE, 'User is deleted');
     }
 
     return data;

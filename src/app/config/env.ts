@@ -1,3 +1,6 @@
+import status from "http-status";
+import AppError from "../errorHelpers/AppError";
+
 interface IEnvVariables {
   NODE_ENV: string;
   PORT: string;
@@ -17,7 +20,7 @@ const setEnvVars = () : IEnvVariables => {
 
     envVariables.forEach((varName) => {
         if (!process.env[varName]) {
-            throw new Error(`Environment variable ${varName} is required but not set`)
+            throw new AppError(status.INTERNAL_SERVER_ERROR, `Environment variable ${varName} is not set`);
         }
     })
 

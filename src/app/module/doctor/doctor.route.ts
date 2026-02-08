@@ -5,8 +5,6 @@ import { updateDoctorSchema } from "./doctor.validation";
 
 const router = Router();
 
-
-
 router.get("/", DoctorController.getAllDoctors);
 router.get("/:id", DoctorController.getSingleDoctor);
 router.put("/:id", validateRequest(updateDoctorSchema), DoctorController.updateDoctor);
