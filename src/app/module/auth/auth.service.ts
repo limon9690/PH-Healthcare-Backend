@@ -14,7 +14,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
     });
 
     if (!data.user) {
-        throw new AppError(status.BAD_REQUEST,'User registration failed');
+        throw new AppError(status.BAD_REQUEST, 'User registration failed');
     }
 
     try {
@@ -29,8 +29,30 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
             return patientData;
         })
 
+        const accessToken = tokenUtils.getAccessToken({
+            userId: data.user.id,
+            email: data.user.email,
+            role: data.user.role,
+            name: data.user.name,
+            status: data.user.status,
+            isDeleted: data.user.isDeleted,
+            emailVerified: data.user.emailVerified
+        });
+
+        const refreshToken = tokenUtils.getRefreshToken({
+            userId: data.user.id,
+            email: data.user.email,
+            role: data.user.role,
+            name: data.user.name,
+            status: data.user.status,
+            isDeleted: data.user.isDeleted,
+            emailVerified: data.user.emailVerified
+        });
+
         return {
             ...data,
+            accessToken,
+            refreshToken,
             patient
         };
     } catch (error) {
