@@ -146,6 +146,19 @@ const getMe = async (user: IUserRequest) => {
 }
 
 const getNewToken = async (refreshToken: string, sessionToken: string) => {
+    const existingSession = await prisma.session.findUnique({
+        where: {
+            token: sessionToken
+        },
+        include: {
+            user: true
+        }
+    });
+
+    if (!existingSession) {
+        throw new AppError(status.UNAUTHORIZED, 'Invalid session token');
+    }
+    
     const verifiedToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET);
 
     if (!verifiedToken.success && verifiedToken.error) {
@@ -174,14 +187,25 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
         emailVerified: data.user.emailVerified
     });
 
+    const updatedSession = await prisma.session.update({
+        where: {
+            token: sessionToken
+        },
+        data: {
+            expiresAt: new Date(Date.now() + (60 * 60 * 60 * 24 * 1000))
+        }
+    })
+
     return {
         accessToken: newAccessToken,
-        refreshToken: newRefreshToken
+        refreshToken: newRefreshToken,
+        sessionToken: updatedSession.token
     }
 }
 
 export const AuthService = {
     registerPatient,
     loginUser,
-    getMe
+    getMe,
+    getNewToken
 }
