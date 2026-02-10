@@ -5,6 +5,11 @@ import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { ILoginUserPayload, IRegisterPatientPayload } from "./auth.interface";
 import { tokenUtils } from "../../utils/token";
+import { IUserRequest } from "../../interfaces";
+import { ref } from "node:process";
+import { jwtUtils } from "../../utils/jwt";
+import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
     const data = await auth.api.signUpEmail({
@@ -111,7 +116,72 @@ const loginUser = async (payload: ILoginUserPayload) => {
     };
 }
 
+const getMe = async (user: IUserRequest) => {
+    const existingUser = await prisma.user.findUnique({
+        where: {
+            id: user.userId
+        },
+        include: {
+            patients: {
+                include: {
+                    appointments: true,
+                    medicalReports: true,
+                    prescriptions: true,
+                    reviews: true,
+                    patientHealthData: true
+                },
+            },
+            doctors: {
+                include: {
+                    appointments: true,
+                    specialties: true,
+                    reviews: true
+                },
+            },
+            admins: true
+        },
+    });
+
+    return existingUser;
+}
+
+const getNewToken = async (refreshToken: string, sessionToken: string) => {
+    const verifiedToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET);
+
+    if (!verifiedToken.success && verifiedToken.error) {
+        throw new AppError(status.UNAUTHORIZED, 'Invalid refresh token');
+    }
+
+    const data = verifiedToken.data as JwtPayload;
+
+    const newAccessToken = tokenUtils.getAccessToken({
+        userId: data.user.id,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name,
+        status: data.user.status,
+        isDeleted: data.user.isDeleted,
+        emailVerified: data.user.emailVerified
+    });
+
+    const newRefreshToken = tokenUtils.getRefreshToken({
+        userId: data.user.id,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name,
+        status: data.user.status,
+        isDeleted: data.user.isDeleted,
+        emailVerified: data.user.emailVerified
+    });
+
+    return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+    }
+}
+
 export const AuthService = {
     registerPatient,
-    loginUser
+    loginUser,
+    getMe
 }

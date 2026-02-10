@@ -29,7 +29,7 @@ const getSingleDoctor = catchAsync(async (req : Request, res : Response) => {
 const updateDoctor = catchAsync(async (req : Request, res : Response) => {
     const { id } = req.params;
     const updateDoctorPayload = req.body;
-    const updatedDoctor = await DoctorService.updateDoctor(updateDoctorPayload, id as string);
+    const updatedDoctor = await DoctorService.updateDoctor(id as string, updateDoctorPayload);
 
     sendResponse(res, {
         statusCode: status.OK,

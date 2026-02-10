@@ -1,0 +1,28 @@
+import { Router } from "express";
+import { checkAuth } from "../../middlewares/auth-check";
+import { validateRequest } from "../../middlewares/validate-request";
+import { Role } from "../../../generated/prisma/enums";
+import { AdminController } from "./admin.controller";
+import { updateAdminZodSchema } from "./admin.validation";
+
+const router = Router();
+
+
+
+router.get("/",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    AdminController.getAllAdmins);
+
+router.get("/:id",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    AdminController.getAdminById);
+
+router.patch("/:id",
+    checkAuth(Role.SUPER_ADMIN),
+    validateRequest(updateAdminZodSchema), AdminController.updateAdmin);
+    
+router.delete("/:id",
+    checkAuth(Role.SUPER_ADMIN),
+    AdminController.deleteAdmin);
+
+export const AdminRoutes = router;

@@ -1,0 +1,13 @@
+model Admin {
+    id            String    @id @default(uuid(7))
+    name          String
+    email         String    @unique
+    profilePhoto  String?
+    contactNumber String?
+    address       String?
+    isDeleted     Boolean   @default(false)
+    deletedAt     DateTime?
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String @unique
+}

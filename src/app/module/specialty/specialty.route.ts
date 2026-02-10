@@ -6,8 +6,11 @@ import { Role } from "../../../generated/prisma/enums";
 const router = Router();
 
 router.post('/', SpecialtyController.createSpecailty);
-router.get('/', checkAuth(Role.ADMIN), SpecialtyController.getAllSpecialties);
-router.put('/:id', SpecialtyController.updateSpecialty),
-router.delete('/:id', SpecialtyController.deleteSpecailty)
+
+router.get('/', SpecialtyController.getAllSpecialties);
+
+router.put('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), SpecialtyController.updateSpecialty);
+
+router.delete('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), SpecialtyController.deleteSpecailty);
 
 export const SpecialtyRoutes = router;

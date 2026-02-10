@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
      //"ignoreDeprecations": "6.0"
   },
-  "include": ["src", "prisma.config.ts"],
+  "include": ["src", "prisma.config.ts", "src\\app\\interfaces\\index.d.ts"],
   "exclude": ["dist", "node_modules"]
 }

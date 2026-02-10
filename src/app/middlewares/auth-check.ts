@@ -7,6 +7,7 @@ import status from "http-status";
 import { jwtUtils } from "../utils/jwt";
 import { envVars } from "../config/env";
 
+
 export const checkAuth = (...authRoles: Role[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -54,6 +55,12 @@ export const checkAuth = (...authRoles: Role[]) => {
                     if (authRoles.length > 0 && !authRoles.includes(user.role)) {
                         throw new AppError(status.FORBIDDEN, 'Forbidden: You do not have enough permissions to access this resource');
                     }
+
+                    req.user = {
+                        userId: user.id,
+                        role: user.role,
+                        email: user.email
+                    }
                 }
 
             }
@@ -69,7 +76,7 @@ export const checkAuth = (...authRoles: Role[]) => {
             }
 
             if (!verifiedToken.success) {
-                throw new AppError(status.UNAUTHORIZED, 'Unauthorized: ' + verifiedToken.message);
+                throw new AppError(status.UNAUTHORIZED, 'Unauthorized: Invalid access token');
             }
 
             if (authRoles.length > 0 && !authRoles.includes(verifiedToken.data?.role)) {
