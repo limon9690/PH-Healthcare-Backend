@@ -3,7 +3,7 @@ import { UserStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
-import { ILoginUserPayload, IRegisterPatientPayload } from "./auth.interface";
+import { IChangePasswordPayload, ILoginUserPayload, IRegisterPatientPayload } from "./auth.interface";
 import { tokenUtils } from "../../utils/token";
 import { IUserRequest } from "../../interfaces";
 import { ref } from "node:process";
@@ -158,7 +158,7 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     if (!existingSession) {
         throw new AppError(status.UNAUTHORIZED, 'Invalid session token');
     }
-    
+
     const verifiedToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET);
 
     if (!verifiedToken.success && verifiedToken.error) {
@@ -168,23 +168,23 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     const data = verifiedToken.data as JwtPayload;
 
     const newAccessToken = tokenUtils.getAccessToken({
-        userId: data.user.id,
-        email: data.user.email,
-        role: data.user.role,
-        name: data.user.name,
-        status: data.user.status,
-        isDeleted: data.user.isDeleted,
-        emailVerified: data.user.emailVerified
+        userId: data.userId,
+        email: data.email,
+        role: data.role,
+        name: data.name,
+        status: data.status,
+        isDeleted: data.isDeleted,
+        emailVerified: data.emailVerified
     });
 
     const newRefreshToken = tokenUtils.getRefreshToken({
-        userId: data.user.id,
-        email: data.user.email,
-        role: data.user.role,
-        name: data.user.name,
-        status: data.user.status,
-        isDeleted: data.user.isDeleted,
-        emailVerified: data.user.emailVerified
+        userId: data.userId,
+        email: data.email,
+        role: data.role,
+        name: data.name,
+        status: data.status,
+        isDeleted: data.isDeleted,
+        emailVerified: data.emailVerified
     });
 
     const updatedSession = await prisma.session.update({
@@ -192,7 +192,7 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
             token: sessionToken
         },
         data: {
-            expiresAt: new Date(Date.now() + (60 * 60 * 60 * 24 * 1000))
+            expiresAt: new Date(Date.now() + (60 * 60 * 24 * 1000))
         }
     })
 
@@ -203,9 +203,62 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     }
 }
 
+const changePassword = async (payload: IChangePasswordPayload, sessionToken: string) => {
+    const session = await auth.api.getSession({
+        headers: {
+            Authorization: `Bearer ${sessionToken}`
+        }
+    });
+
+    if (!session) {
+        throw new AppError(status.UNAUTHORIZED, 'Invalid session token');
+    }
+
+    const { currentPassword, newPassword } = payload;
+
+    const result = await auth.api.changePassword({
+        body: {
+            currentPassword,
+            newPassword,
+            revokeOtherSessions: true
+
+        },
+        headers: {
+            Authorization: `Bearer ${sessionToken}`
+        }
+    });
+
+    const newAccessToken = tokenUtils.getAccessToken({
+        userId: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+        name: session.user.name,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified
+    });
+
+    const newRefreshToken = tokenUtils.getRefreshToken({
+        userId: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+        name: session.user.name,
+        status: session.user.status,
+        isDeleted: session.user.isDeleted,
+        emailVerified: session.user.emailVerified
+    });
+
+    return {
+        ...result,
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+    };
+}
+
 export const AuthService = {
     registerPatient,
     loginUser,
     getMe,
-    getNewToken
+    getNewToken,
+    changePassword
 }
