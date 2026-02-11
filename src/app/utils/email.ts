@@ -4,16 +4,19 @@ import AppError from '../errorHelpers/AppError';
 import status from 'http-status';
 import path from 'path';
 import ejs from 'ejs';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-    host: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_HOST,
-    secure: true,
-    auth: {
-        user: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_USER,
-        pass: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_PASSWORD,
-    },
-    port: Number(envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_PORT)
-});
+const resend = new Resend(envVars.RESEND_API_KEY);
+
+// const transporter = nodemailer.createTransport({
+//     host: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_HOST,
+//     secure: true,
+//     auth: {
+//         user: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_USER,
+//         pass: envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_PASSWORD,
+//     },
+//     port: Number(envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_PORT)
+// });
 
 interface IEmailOptions {
     to: string;
@@ -34,8 +37,8 @@ export const sendEmail = async (options: IEmailOptions) => {
         const templatePath = path.resolve(process.cwd(), `src/app/templates/${templateName}.ejs`);
         const html = await ejs.renderFile(templatePath, templateData);
 
-        const info = await transporter.sendMail({
-            from : envVars.EMAIL_SENDER.EMAIL_SENDER_SMTP_USER,
+        const info = await resend.emails.send({
+            from : "no-reply@ihlimon.tech",
             to,
             subject,
             html,
@@ -46,7 +49,7 @@ export const sendEmail = async (options: IEmailOptions) => {
             })) || []
         });
 
-        console.log(`Email sent to ${to}, status ID: ${info.accepted}`);
+        console.log(`Email sent to ${to}, status ID: ${info.data}`);
 
     } catch (error: any) {
         console.log('Error sending email:', error);

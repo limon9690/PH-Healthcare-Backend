@@ -19,6 +19,7 @@ interface IEnvVariables {
   EMAIL_SENDER_SMTP_HOST: string;
   EMAIL_SENDER_SMTP_PORT: string;
   }
+  RESEND_API_KEY: string;
 }
 
 const setEnvVars = (): IEnvVariables => {
@@ -37,7 +38,8 @@ const setEnvVars = (): IEnvVariables => {
     'EMAIL_SENDER_SMTP_USER',
     'EMAIL_SENDER_SMTP_PASSWORD',
     'EMAIL_SENDER_SMTP_HOST',
-    'EMAIL_SENDER_SMTP_PORT'
+    'EMAIL_SENDER_SMTP_PORT',
+    'RESEND_API_KEY'
   ]
 
   envVariables.forEach((varName) => {
@@ -63,7 +65,8 @@ const setEnvVars = (): IEnvVariables => {
       EMAIL_SENDER_SMTP_PASSWORD: process.env.EMAIL_SENDER_SMTP_PASSWORD as string,
       EMAIL_SENDER_SMTP_HOST: process.env.EMAIL_SENDER_SMTP_HOST as string,
       EMAIL_SENDER_SMTP_PORT: process.env.EMAIL_SENDER_SMTP_PORT as string,
-    }
+    },
+    RESEND_API_KEY: process.env.RESEND_API_KEY as string
   }
 }
 

@@ -14,7 +14,7 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: true,
     },
-    
+
     emailVerification: {
         sendOnSignUp: true,
         sendOnSignIn: true,
@@ -24,19 +24,35 @@ export const auth = betterAuth({
         bearer(),
         emailOTP({
             overrideDefaultEmailVerification: true,
-            async sendVerificationOTP({email, otp, type}){
-                const user = await prisma.user.findUnique({where: {email}});
+            async sendVerificationOTP({ email, otp, type }) {
+                if (type === "email-verification") {
+                    const user = await prisma.user.findUnique({ where: { email } });
 
-                if (user && !user.emailVerified) {
-                    sendEmail({
-                        to: email,
-                        subject: "Verify your email",
-                        templateName: "otp",
-                        templateData: {
-                            name: user.name,
-                            otp,
-                        }
-                    })
+                    if (user && !user.emailVerified) {
+                        await sendEmail({
+                            to: email,
+                            subject: "Verify your email",
+                            templateName: "otp",
+                            templateData: {
+                                name: user.name,
+                                otp,
+                            }
+                        })
+                    }
+                } else if (type === "forget-password") {
+                    const user = await prisma.user.findUnique({ where: { email } });
+
+                    if (user) {
+                        await sendEmail({
+                            to: email,
+                            subject: "Password Reset OTP",
+                            templateName: "otp",
+                            templateData: {
+                                name: user.name,
+                                otp,
+                            }
+                        })
+                    }
                 }
             },
             expiresIn: 5 * 60, // 5 minutes
@@ -73,8 +89,8 @@ export const auth = betterAuth({
         }
     },
     session: {
-        expiresIn:  60 * 60 * 60 * 24,
-        updateAge:  60 * 60 * 60 * 24,
+        expiresIn: 60 * 60 * 60 * 24,
+        updateAge: 60 * 60 * 60 * 24,
         cookieCache: {
             enabled: true,
             maxAge: 60 * 60 * 60 * 24 // 1 day in milliseconds
