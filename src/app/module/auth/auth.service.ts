@@ -255,10 +255,21 @@ const changePassword = async (payload: IChangePasswordPayload, sessionToken: str
     };
 }
 
+const logOut = async (sessionToken: string) => {
+    const result = await auth.api.signOut({
+        headers: {
+            Authorization: `Bearer ${sessionToken}`
+        }
+    });
+
+    return result;
+}
+
 export const AuthService = {
     registerPatient,
     loginUser,
     getMe,
     getNewToken,
-    changePassword
+    changePassword,
+    logOut
 }
