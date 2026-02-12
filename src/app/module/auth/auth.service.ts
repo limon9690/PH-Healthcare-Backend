@@ -228,6 +228,17 @@ const changePassword = async (payload: IChangePasswordPayload, sessionToken: str
         }
     });
 
+    if (session.user.needsPasswordChange) {
+        await prisma.user.update({
+            where: {
+                id: session.user.id
+            },
+            data: {
+                needsPasswordChange: false
+            }
+        });
+    }
+
     const newAccessToken = tokenUtils.getAccessToken({
         userId: session.user.id,
         email: session.user.email,
@@ -339,14 +350,51 @@ const resetPassword = async (email: string, otp: string, newPassword: string) =>
     }); 
 }
 
+const googleLoginSuccess = async (session : Record<string, any>) => {
+    const existingPatient = await prisma.patient.findUnique({
+        where: {
+            userId: session.user.id
+        }
+    });
+
+    if (!existingPatient) {
+        const patient = await prisma.patient.create({
+            data: {
+                userId: session.user.id,
+                name: session.user.name,
+                email: session.user.email
+            }
+        });
+    }
+
+    const accessToken = tokenUtils.getAccessToken({
+        userId: session.user.id,
+        name: session.user.name,
+        role: session.user.role,
+    });
+
+    const refreshToken = tokenUtils.getRefreshToken({
+        userId: session.user.id,
+        name: session.user.name,
+        role: session.user.role,
+    });
+
+    return {
+        accessToken,
+        refreshToken
+    };
+};
+
+
 export const AuthService = {
     registerPatient,
     loginUser,
-    getMe,
+    getMe, 
     getNewToken,
     changePassword,
     logOut,
     verifyEmail,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    googleLoginSuccess,
 }

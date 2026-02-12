@@ -20,6 +20,10 @@ interface IEnvVariables {
   EMAIL_SENDER_SMTP_PORT: string;
   }
   RESEND_API_KEY: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
+  FRONTEND_URL: string;
 }
 
 const setEnvVars = (): IEnvVariables => {
@@ -39,7 +43,11 @@ const setEnvVars = (): IEnvVariables => {
     'EMAIL_SENDER_SMTP_PASSWORD',
     'EMAIL_SENDER_SMTP_HOST',
     'EMAIL_SENDER_SMTP_PORT',
-    'RESEND_API_KEY'
+    'RESEND_API_KEY',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_CALLBACK_URL',
+    'FRONTEND_URL'
   ]
 
   envVariables.forEach((varName) => {
@@ -66,7 +74,11 @@ const setEnvVars = (): IEnvVariables => {
       EMAIL_SENDER_SMTP_HOST: process.env.EMAIL_SENDER_SMTP_HOST as string,
       EMAIL_SENDER_SMTP_PORT: process.env.EMAIL_SENDER_SMTP_PORT as string,
     },
-    RESEND_API_KEY: process.env.RESEND_API_KEY as string
+    RESEND_API_KEY: process.env.RESEND_API_KEY as string,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL as string,
+    FRONTEND_URL: process.env.FRONTEND_URL as string
   }
 }
 
