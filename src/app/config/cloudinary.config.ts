@@ -27,6 +27,8 @@ export const deleteFromCloudinary = async (url: string) => {
 
 }
 
+
+// manually upload to cloudinary
 export const uploadToCloudinary = async (buffer : Buffer, fileName: string) : Promise<UploadApiResponse> => {
   if (!buffer || !fileName) {
     throw new AppError(status.BAD_REQUEST, "Invalid file data");
