@@ -5,11 +5,21 @@ import z from "zod";
 import { IErrorResponse, IErrorSource } from "../interfaces/error.interface";
 import { zodErrorHandler } from "../errorHelpers/zod-error-handler";
 import AppError from "../errorHelpers/AppError";
+import { deleteFromCloudinary } from "../config/cloudinary.config";
 
 
-export const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
     if (envVars.NODE_ENV === 'development') {
         console.error('Global Error Handler:', err);
+    }
+
+    if (req.file) {
+        await deleteFromCloudinary(req.file.path);
+    }
+
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const imageUrls = req.files.map(file => file.path);
+        await Promise.all(imageUrls.map(url => deleteFromCloudinary(url)));
     }
 
     let errorSources: IErrorSource[] = [];

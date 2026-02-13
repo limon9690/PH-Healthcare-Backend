@@ -7,7 +7,6 @@ import { tokenUtils } from "../../utils/token";
 import AppError from "../../errorHelpers/AppError";
 import { CookieUtils } from "../../utils/cookie";
 import { envVars } from "../../config/env";
-import { betterAuth } from "better-auth";
 import { auth } from "../../lib/auth";
 
 const registerPatient = catchAsync(async (req : Request, res : Response) => {
