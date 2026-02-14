@@ -75,3 +75,13 @@ export interface PrismaNumberFilter{
     gte ?: number;
     not ?: PrismaNumberFilter | number;
 }
+
+export interface IQueryResult<T>{
+    data : T[];
+    meta : {
+        page : number;
+        limit : number;
+        total : number;
+        totalPages : number;
+    }
+}
