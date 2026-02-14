@@ -64,3 +64,14 @@ export interface PrismaWhereCondition {
     NOT? : Record<string, unknown>[];
     [key: string] : unknown;
 }
+
+export interface PrismaNumberFilter{
+    equals ?: number;
+    in ?: number[];
+    notIn ?: number[];
+    lt ?: number;
+    lte ?: number;
+    gt ?: number;
+    gte ?: number;
+    not ?: PrismaNumberFilter | number;
+}
