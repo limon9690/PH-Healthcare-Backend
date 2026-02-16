@@ -1,0 +1,161 @@
+import { addHours, addMinutes, format } from "date-fns";
+import { ICreateSchedulePayload, IUpdateSchedulePayload } from "./schedule.interface";
+import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { Prisma, Schedule } from "../../../generated/prisma/client";
+import { IQueryParams } from "../../interfaces/query.interface";
+import { scheduleFilterableFields, scheduleIncludeConfig, scheduleSearchableFields } from "./schedule.constant";
+
+const createSchedule = async (payload: ICreateSchedulePayload) => {
+    const { startDate, endDate, startTime, endTime } = payload;
+
+    const interval = 30;
+
+    const currentDate = new Date(startDate);
+    const lastDate = new Date(endDate);
+
+    const schedules = [];
+    
+    while (currentDate <= lastDate) {
+        const startDateTime = new Date(
+            addMinutes(
+                addHours(
+                    `${format(currentDate, "yyyy-MM-dd")}`,
+                    Number(startTime.split(":")[0])
+                ),
+                Number(startTime.split(":")[1])
+            )
+        );
+
+        const endDateTime = new Date(
+            addMinutes(
+                addHours(
+                    `${format(currentDate, "yyyy-MM-dd")}`,
+                    Number(endTime.split(":")[0])
+                ),
+                Number(endTime.split(":")[1])
+            )
+        );
+
+        while (startDateTime < endDateTime) {
+            const startTime = await convertToTime(startDateTime);
+            const endTime = await convertToTime(addMinutes(startDateTime, interval));
+
+            const scheduleData = {
+                startDateTime: startTime,
+                endDateTime: endTime
+            }
+
+            const existingSchedule = await prisma.schedule.findFirst({
+                where: {
+                    startDateTime: scheduleData.startDateTime,
+                    endDateTime: scheduleData.endDateTime
+                }
+            })
+
+            if (!existingSchedule) {
+                const result = await prisma.schedule.create({
+                    data: scheduleData
+                })
+
+                schedules.push(result);
+            }
+
+            startDateTime.setMinutes(startDateTime.getMinutes() + interval);
+        }
+
+        startDateTime.setDate(startDateTime.getDate() + 1);
+    }
+
+    return schedules;
+}
+
+const getAllSchedules = async (query : IQueryParams) => {
+    const queryBuilder = new QueryBuilder<Schedule, Prisma.ScheduleWhereInput, Prisma.ScheduleInclude>(
+        prisma.schedule,
+        query,
+        {
+            searchableFields: scheduleSearchableFields,
+            filterableFields:scheduleFilterableFields
+        }
+    )
+
+    const result = await queryBuilder
+    .search()
+    .filter()
+    .paginate()
+    .dynamicInclude(scheduleIncludeConfig)
+    .sort()
+    .fields()
+    .execute();
+
+    return result;
+}
+
+const getScheduleById = (id : string) => {
+    const schedule = prisma.schedule.findUnique({
+        where: {
+            id
+        },
+    });
+
+    return schedule;
+} 
+
+const updateSchedule = async(id : string, payload : IUpdateSchedulePayload) => {
+    const { startDate, endDate, startTime, endTime } = payload;
+    const startDateTime = new Date(
+        addMinutes(
+            addHours(
+                `${format(new Date(startDate), 'yyyy-MM-dd')}`,
+                Number(startTime.split(':')[0])
+            ),
+            Number(startTime.split(':')[1])
+        )
+    );
+
+    const endDateTime = new Date(
+        addMinutes(
+            addHours(
+                `${format(new Date(endDate), 'yyyy-MM-dd')}`,
+                Number(endTime.split(':')[0])
+            ),
+            Number(endTime.split(':')[1])
+        )
+    );
+
+    const updatedSchedule = await prisma.schedule.update({
+        where: {
+            id: id
+        },
+        data: {
+            startDateTime: startDateTime,
+            endDateTime: endDateTime
+        }
+    });
+
+    return updatedSchedule;
+};
+
+const deleteSchedule = async (id : string) => {
+    const deletedSchedule = await prisma.schedule.delete({
+        where: {
+            id: id
+        }
+    });
+
+    return deletedSchedule;
+}
+
+const convertToTime = async (date: Date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() * offset);
+}
+
+export const ScheduleService = {
+    createSchedule,
+    getAllSchedules,
+    getScheduleById,
+    updateSchedule,
+    deleteSchedule
+}
