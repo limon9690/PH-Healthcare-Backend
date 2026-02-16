@@ -17,4 +17,4 @@ router.patch('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN),validateRequest(upd
 
 router.delete('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), ScheduleController.deleteSchedule);
 
-export const DoctorScheduleRoutes = router;
+export const ScheduleRoutes = router;
