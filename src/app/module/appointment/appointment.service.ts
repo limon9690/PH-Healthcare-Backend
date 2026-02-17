@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { IBookAppointmentPayload } from "./appointment.interface"
 import AppError from "../../errorHelpers/AppError";
 import status from "http-status";
-import { AppointmentStatus, Role } from "../../../generated/prisma/enums";
+import { AppointmentStatus, PaymentStatus, Role } from "../../../generated/prisma/enums";
 import { stripe } from "../../config/stripe.config";
 import { envVars } from "../../config/env";
 
@@ -373,7 +373,56 @@ const initiatePayment = async (appointmentId: string, user: IUserRequest) => {
     }
 }
 
-const cancelUnpaidAppointments = async () => { }
+const cancelUnpaidAppointments = async () => {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    const unpaidAppointments = await prisma.appointment.findMany({
+        where: {
+            createdAt: {
+                lte: thirtyMinutesAgo,
+            },
+            paymentStatus: PaymentStatus.UNPAID,
+        },
+    });
+
+    const appointmentToCancel = unpaidAppointments.map(appointment => appointment.id);
+
+    await prisma.$transaction(async (tx) => {
+
+        await tx.appointment.updateMany({
+            where: {
+                id: {
+                    in: appointmentToCancel,
+                },
+            },
+            data: {
+                status: AppointmentStatus.CANCELED,
+            },
+        });
+
+        await tx.payment.deleteMany({
+            where: {
+                appointmentId: {
+                    in: appointmentToCancel,
+                },
+            },
+        });
+
+        for (const unpaidAppointment of unpaidAppointments) {
+            await tx.doctorSchedules.update({
+                where: {
+                    doctorId_scheduleId: {
+                        doctorId: unpaidAppointment.doctorId,
+                        scheduleId: unpaidAppointment.scheduleId,
+                    },
+                },
+                data: {
+                    isBooked: false,
+                },
+            });
+        }
+    });
+}
 
 export const AppointmentService = {
     bookAppointment,
