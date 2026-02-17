@@ -27,6 +27,10 @@ interface IEnvVariables {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  STRIPE: {
+    SECRET_KEY: string;
+    WEBHOOK_SECRET: string;
+  }
 }
 
 const setEnvVars = (): IEnvVariables => {
@@ -53,7 +57,9 @@ const setEnvVars = (): IEnvVariables => {
     'FRONTEND_URL',
     'CLOUDINARY_CLOUD_NAME',
     'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET'
+    'CLOUDINARY_API_SECRET',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET'
   ]
 
   envVariables.forEach((varName) => {
@@ -88,6 +94,10 @@ const setEnvVars = (): IEnvVariables => {
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+    STRIPE: {
+      SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
+      WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
+    }
   }
 }
 

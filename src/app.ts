@@ -10,6 +10,7 @@ import path from "path";
 import cors from "cors";
 import { envVars } from "./app/config/env";
 import qs from "qs";
+import { PaymentController } from "./app/module/payment/payment.controller";
 
 const app: Application = express();
 
@@ -26,6 +27,9 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorizationn"]
 }));
+
+// stripe webhook
+app.post("/webhook", express.raw({type: "application/json"}), PaymentController.handleStripeWebhookEvent);
 
 // better auth 
 app.use("/api/auth", toNodeHandler(auth));
