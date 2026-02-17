@@ -15,7 +15,7 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
     const lastDate = new Date(endDate);
 
     const schedules = [];
-    
+
     while (currentDate <= lastDate) {
         const startDateTime = new Date(
             addMinutes(
@@ -38,12 +38,12 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
         );
 
         while (startDateTime < endDateTime) {
-            const startTime = await convertToTime(startDateTime);
-            const endTime = await convertToTime(addMinutes(startDateTime, interval));
+            const s = await convertDateTime(startDateTime);
+            const e = await convertDateTime(addMinutes(startDateTime, interval));
 
             const scheduleData = {
-                startDateTime: startTime,
-                endDateTime: endTime
+                startDateTime: s,
+                endDateTime: e
             }
 
             const existingSchedule = await prisma.schedule.findFirst({
@@ -57,14 +57,14 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
                 const result = await prisma.schedule.create({
                     data: scheduleData
                 })
-
+                console.log(result);
                 schedules.push(result);
             }
 
-            startDateTime.setMinutes(startDateTime.getMinutes() + interval);
+            startDateTime.setMinutes(startDateTime.getMinutes() + interval)
         }
 
-        startDateTime.setDate(startDateTime.getDate() + 1);
+        currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return schedules;
@@ -147,9 +147,9 @@ const deleteSchedule = async (id : string) => {
     return deletedSchedule;
 }
 
-const convertToTime = async (date: Date) => {
+const convertDateTime = async (date: Date) => {
     const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() * offset);
+    return new Date(date.getTime() + offset);
 }
 
 export const ScheduleService = {

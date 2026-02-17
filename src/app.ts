@@ -55,19 +55,6 @@ cron.schedule("*/25 * * * *", async () => {
 
 app.use("/api/v1", indexRoutes)
 
-// Basic route
-app.get('/', async (req: Request, res: Response) => {
-  const specialty = await prisma.specialty.create({
-    data: {
-      title : "Cardiology"
-    }
-  })
-  res.status(201).json({
-    success: true,
-    message: "API is working",
-    data: specialty
-  })
-});
 
 app.use(globalErrorHandler);
 app.use(notFound)
