@@ -9,19 +9,6 @@ import { IQueryParams } from "../../interfaces/query.interface";
 import { Doctor, Prisma } from "../../../generated/prisma/client";
 
 const getAllDoctors = async (query: IQueryParams) => {
-    // const resutl = await prisma.doctor.findMany({
-    //     include: {
-    //         User: true,
-    //         specialties: {
-    //             include: {
-    //                 Specialty: true
-
-    //             }
-    //         },
-    //     }
-    // });
-    // return resutl;
-
     const queryBuilder = new QueryBuilder<Doctor, Prisma.DoctorWhereInput, Prisma.DoctorInclude>(prisma.doctor,
         query,
         {
