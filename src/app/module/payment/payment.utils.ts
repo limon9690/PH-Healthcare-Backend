@@ -145,10 +145,6 @@ export const generateInvoicePdf = async (data: InvoiceData): Promise<Buffer> => 
                 }
             );
 
-            doc.text('If you have any questions, please contact us at support@ph-healthcare.com', {
-                align: 'center',
-            });
-
             doc.text('Payment processed securely through Stripe', {
                 align: 'center',
             });
